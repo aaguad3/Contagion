@@ -1,0 +1,553 @@
+       /* Prog2Contagion.cpp
+
+   Program #2: Play the game of Contagion against another person
+               This is a variation of Ataxx, a version of which can
+               be played online at: http://www.classikgames.com/ataxx.html
+   Class: CS 141
+   Date: 1/27/2019
+   Author: *** Adrian Aguada ***
+
+   Grading Rubric:
+     55% Passes Codio run-time tests (some cases below are split into multiple tests)
+          5 Handles both upper and lower case user input
+          5 Handles making adjacent move for each player
+         10 Handles making jump move for each player
+          5 Handles pass move 
+          2 Error message and retry when source position does not belong to player
+          2 Error message and retry when destination position is not empty
+          6 Error message and retry when destination is not one or two squares away
+            in horizontal, vertical, or diagonal line
+         15 Flips opponent pieces adjacent to move destination
+          5 When board is filled correctly identifies winner and exits program
+
+     45% Programming Style:
+         10 Meaningful Identifier Names.
+         10 Comments, header, and meaningful variable names
+         10 Functional Decomposition 
+         10 Appropriate data and control structures
+          5 Code Layout
+*/
+#include <iostream>
+#include <cstdlib>   // for exit() and abs()
+using namespace std;
+
+// The 25 board position variables may be global variables, but no other variables may be global.
+char  p1, p2, p3, p4, p5,
+      p6, p7, p8, p9,p10,
+     p11,p12,p13,p14,p15,
+     p16,p17,p18,p19,p20,
+     p21,p22,p23,p24,p25;
+
+
+//-----------------------------------------------------------------------------------------
+// Display the game instructions
+void displayInstructions()
+{
+    cout << " \n"
+         << "Welcome to the 2-player game of Contagion, where the point of the game is    \n"
+         << "to capture as much of the board as possible.  On each move you must enter \n"
+         << "the row and column position of one of your current pieces (e.g. a1) and   \n"
+         << "the row and column of an empty destination, which must be one or two      \n"
+         << "squares away.  Moves can be made horizontally, vertically, or diagonally. \n"
+         << " \n"
+         << "If the destination is one square away, then an additional piece for you   \n"
+         << "is placed in the destination square.  If the destination is two squares   \n"
+         << "away (a jump move), then the original piece is moved to that destination. \n"
+         << "jumping over a single square or any player's piece.                       \n"
+         << " \n"
+         << "After a piece has been moved, all opponent pieces adjacent to the         \n"
+         << "destination are changed to match the piece of the user making the move.   \n"
+         << "Player X moves first.     \n"
+         << " \n"
+         << "A valid first move, for instance, could be: a1 a2  which since it is just \n"
+         << "one square away, would put an additional X on square a2.  Alternatively   \n"
+         << "if the first move is:  a1 c3  then since it is two squares away, the piece\n"
+         << "currently at a1 would be moved to destination c3.                         \n"
+         << endl;
+}
+
+
+//-----------------------------------------------------------------------------------------
+// Display the board, using the global board variables
+// For reference here are the board row, col and board variable values:
+//       1  2  3  4  5
+//    ----------------
+//  A |  1  2  3  4  5
+//  B |  6  7  8  9 10
+//  C | 11 12 13 14 15
+//  D | 16 17 18 19 20
+//  E | 21 22 23 24 25
+//
+void displayBoard()
+{
+    cout << "    1   2   3   4   5  \n"
+         << "  ---------------------\n"
+         << "A | " <<  p1 << " | " <<  p2 << " | " <<  p3 << " | " <<  p4 << " | " <<  p5 << " | A \n"
+         << "  |---|---|---|---|---| \n"
+         << "B | " <<  p6 << " | " <<  p7 << " | " <<  p8 << " | " <<  p9 << " | " << p10 << " | B \n"
+         << "  |---|---|---|---|---| \n"
+         << "C | " << p11 << " | " << p12 << " | " << p13 << " | " << p14 << " | " << p15 << " | C \n"
+         << "  |---|---|---|---|---| \n"
+         << "D | " << p16 << " | " << p17 << " | " << p18 << " | " << p19 << " | " << p20 << " | D \n"
+         << "  |---|---|---|---|---| \n"
+         << "E | " << p21 << " | " << p22 << " | " << p23 << " | " << p24 << " | " << p25 << " | E \n"
+         << "  ---------------------\n"
+         << "    1   2   3   4   5  \n"
+         << endl;
+}
+
+
+//-----------------------------------------------------------------------------------------
+
+char getValueAt(char currRow, int currCol) {
+    char valueAtPiece = ' ';
+    if(currRow == 'A') {
+        switch(currCol) {
+            case 1: valueAtPiece = p1; break;
+            case 2: valueAtPiece = p2; break;
+            case 3: valueAtPiece = p3; break;
+            case 4: valueAtPiece = p4; break;
+            case 5: valueAtPiece = p5; break;
+        }
+    }
+    else if(currRow == 'B') {
+        switch(currCol) {
+            case 1: valueAtPiece = p6; break;
+            case 2: valueAtPiece = p7; break;
+            case 3: valueAtPiece = p8; break;
+            case 4: valueAtPiece = p9; break;
+            case 5: valueAtPiece = p10; break;
+        }
+    }
+    else if(currRow == 'C') {
+        switch(currCol) {
+            case 1: valueAtPiece = p11; break;
+            case 2: valueAtPiece = p12; break;
+            case 3: valueAtPiece = p13; break;
+            case 4: valueAtPiece = p14; break;
+            case 5: valueAtPiece = p15; break; 
+        }
+    }
+    else if(currRow == 'D') {
+        switch(currCol) {
+            case 1: valueAtPiece = p16; break;
+            case 2: valueAtPiece = p17; break;
+            case 3: valueAtPiece = p18; break;
+            case 4: valueAtPiece = p19; break;
+            case 5: valueAtPiece = p20; break;
+        }
+    }
+    else if(currRow == 'E') {
+        switch(currCol) {
+            case 1: valueAtPiece = p21; break;
+            case 2: valueAtPiece = p22; break;
+            case 3: valueAtPiece = p23; break;
+            case 4: valueAtPiece = p24; break;
+            case 5: valueAtPiece = p25; break;
+        }
+    }
+    return valueAtPiece;
+}
+
+void setValueAt(char destRow, int destCol, char newValue) {
+    if(destRow == 'A') {
+        switch(destCol) {
+            case 1: p1 = newValue; break; 
+            case 2: p2 = newValue; break;
+            case 3: p3 = newValue; break;
+            case 4: p4 = newValue; break;
+            case 5: p5 = newValue; break;
+        }
+    }
+    else if(destRow == 'B') {
+        switch(destCol) {
+            case 1: p6 = newValue; break;
+            case 2: p7 = newValue; break;
+            case 3: p8 = newValue; break;
+            case 4: p9 = newValue; break;
+            case 5: p10 = newValue; break;
+        }
+    }
+    else if(destRow == 'C') {
+        switch(destCol) {
+            case 1: p11 = newValue; break;
+            case 2: p12 = newValue; break;
+            case 3: p13 = newValue; break;
+            case 4: p14 = newValue; break;
+            case 5: p15 = newValue; break;
+        }
+    }
+    else if(destRow == 'D') {
+        switch(destCol) {
+            case 1: p16 = newValue; break;
+            case 2: p17 = newValue; break;
+            case 3: p18 = newValue; break;
+            case 4: p19 = newValue; break;
+            case 5: p20 = newValue; break;
+        }
+    }
+    else if(destRow == 'E') {
+        switch(destCol) {
+            case 1: p21 = newValue; break;
+            case 2: p22 = newValue; break;
+            case 3: p23 = newValue; break;
+            case 4: p24 = newValue; break;
+            case 5: p25 = newValue; break;
+        }
+    }
+}
+
+void setValueAt(char destRow, int destCol, char newValue, char currRow, int currCol, int &moveNumber) {
+    if(getValueAt(destRow, destCol) != ' ') { //invalid if destination is already filled
+        cout << "*** Invalid move.  Destination must be empty. Please retry." << endl;
+    }
+    else if(((abs(currRow - destRow) == 2) && (abs(currCol - destCol) == 1)) || 
+            ((abs(currRow - destRow) == 1) && (abs(currCol - destCol) == 2))) { //special case for the 2 spaces that don't work within 2x2
+        cout << "*** Invalid move.  A move must be one or two squares away. Please retry." << endl;
+    }
+    else if((abs(currCol - destCol)) <= 2 && (abs(currRow - destRow) <= 2)) { //place piece if less than or equal to 2 spaces away
+        if(destRow == 'A') {
+            switch(destCol) {
+                case 1: p1 = newValue; moveNumber++; break; 
+                case 2: p2 = newValue; moveNumber++; break;
+                case 3: p3 = newValue; moveNumber++; break;
+                case 4: p4 = newValue; moveNumber++; break;
+                case 5: p5 = newValue; moveNumber++; break;
+            }
+        }
+        else if(destRow == 'B') {
+            switch(destCol) {
+                case 1: p6 = newValue; moveNumber++; break;
+                case 2: p7 = newValue; moveNumber++; break;
+                case 3: p8 = newValue; moveNumber++; break;
+                case 4: p9 = newValue; moveNumber++; break;
+                case 5: p10 = newValue; moveNumber++; break;
+            }
+        }
+        else if(destRow == 'C') {
+            switch(destCol) {
+                case 1: p11 = newValue; moveNumber++; break;
+                case 2: p12 = newValue; moveNumber++; break;
+                case 3: p13 = newValue; moveNumber++; break;
+                case 4: p14 = newValue; moveNumber++; break;
+                case 5: p15 = newValue; moveNumber++; break;
+            }
+        }
+        else if(destRow == 'D') {
+            switch(destCol) {
+                case 1: p16 = newValue; moveNumber++; break;
+                case 2: p17 = newValue; moveNumber++; break;
+                case 3: p18 = newValue; moveNumber++; break;
+                case 4: p19 = newValue; moveNumber++; break;
+                case 5: p20 = newValue; moveNumber++; break;
+            }
+        }
+        else if(destRow == 'E') {
+            switch(destCol) {
+                case 1: p21 = newValue; moveNumber++; break;
+                case 2: p22 = newValue; moveNumber++; break;
+                case 3: p23 = newValue; moveNumber++; break;
+                case 4: p24 = newValue; moveNumber++; break;
+                case 5: p25 = newValue; moveNumber++; break;
+            }
+        }
+    }
+    else {
+        cout << "*** Invalid move.  A move must be one or two squares away. Please retry." << endl;
+    }
+}
+
+int indexAt(char destRow, int destCol) { //returns the index (1-25)
+    if(destRow = 'A') {
+        switch(destCol) {
+            case 1: return 1;
+            case 2: return 2;
+            case 3: return 3;
+            case 4: return 4;
+            case 5: return 5;
+        }
+    }
+    else if(destRow = 'B') {
+        switch(destCol) {
+            case 1: return 6;
+            case 2: return 7;
+            case 3: return 8;
+            case 4: return 9;
+            case 5: return 10;
+        }
+    }
+    else if(destRow = 'C') {
+        switch(destCol) {
+            case 1: return 11;
+            case 2: return 12;
+            case 3: return 13;
+            case 4: return 14;
+            case 5: return 15;
+        }
+    }
+    else if(destRow = 'D') {
+        switch(destCol) {
+            case 1: return 16;
+            case 2: return 17;
+            case 3: return 18;
+            case 4: return 19;
+            case 5: return 20;
+        }
+    }
+    else if(destRow = 'E') {
+        switch(destCol) {
+            case 1: return 21;
+            case 2: return 22;
+            case 3: return 23;
+            case 4: return 24;
+            case 5: return 25;
+        }
+    }
+    else {
+        return 99; //out of bounds
+    }
+}
+
+void removePiece(int currCol, int destCol, char newValue, char currRow, char destRow) { 
+    if(((indexAt(destRow, destCol) >= 1)) && (indexAt(destRow, destCol) <= 25)) { //if index is between p1 and p25
+        if(((abs(currRow - destRow) == 2) && (abs(currCol - destCol) == 1)) || 
+           ((abs(currRow - destRow) == 1) && (abs(currCol - destCol) == 2))) { //special case for the 2 spaces that don't work within 2x2
+            return;
+        }
+        else if((abs(currCol - destCol)) == 2 && (abs(currRow - destRow) == 2) ||
+               ((abs(currRow - destRow) == 2) || 
+                (abs(currCol - destCol) == 2))) { //remove original piece if destination was exactly 2 spaces away
+            if(currRow == 'A') {
+                switch(currCol) {
+                    case 1: p1 = newValue; break;
+                    case 2: p2 = newValue; break;
+                    case 3: p3 = newValue; break;
+                    case 4: p4 = newValue; break;
+                    case 5: p5 = newValue; break;
+                }
+            }
+            else if(currRow == 'B') {
+                switch(currCol) {
+                    case 1: p6 = newValue; break;
+                    case 2: p7 = newValue; break;
+                    case 3: p8 = newValue; break;
+                    case 4: p9 = newValue; break;
+                    case 5: p10 = newValue; break;
+                }
+            }
+            else if(currRow == 'C') {
+                switch(currCol) {
+                    case 1: p11 = newValue; break;
+                    case 2: p12 = newValue; break;
+                    case 3: p13 = newValue; break;
+                    case 4: p14 = newValue; break;
+                    case 5: p15 = newValue; break;
+                }
+            }
+            else if(currRow == 'D') {
+                switch(currCol) {
+                    case 1: p16 = newValue; break;
+                    case 2: p17 = newValue; break;
+                    case 3: p18 = newValue; break;
+                    case 4: p19 = newValue; break;
+                    case 5: p20 = newValue; break;
+                }
+            }
+            else if(currRow == 'E') {
+                switch(currCol) {
+                    case 1: p21 = newValue; break;
+                    case 2: p22 = newValue; break;
+                    case 3: p23 = newValue; break;
+                    case 4: p24 = newValue; break;
+                    case 5: p25 = newValue; break;
+                }
+            }
+        }
+    }
+    else { //if index is not between 1-25
+        return;
+    }
+}
+
+void countPieces(int &xCounter, int &oCounter) {
+    xCounter = 0;
+    oCounter = 0;
+    
+    if(p1 == 'X') { xCounter++; } else if(p1 == 'O') { oCounter++; }
+    if(p2 == 'X') { xCounter++; } else if(p2 == 'O') { oCounter++; }
+    if(p3 == 'X') { xCounter++; } else if(p3 == 'O') { oCounter++; }
+    if(p4 == 'X') { xCounter++; } else if(p4 == 'O') { oCounter++; }
+    if(p5 == 'X') { xCounter++; } else if(p5 == 'O') { oCounter++; }
+    if(p6 == 'X') { xCounter++; } else if(p6 == 'O') { oCounter++; }
+    if(p7 == 'X') { xCounter++; } else if(p7 == 'O') { oCounter++; }
+    if(p8 == 'X') { xCounter++; } else if(p8 == 'O') { oCounter++; }
+    if(p9 == 'X') { xCounter++; } else if(p9 == 'O') { oCounter++; }
+    if(p10 == 'X') { xCounter++; } else if(p10 == 'O') { oCounter++; }
+    if(p11 == 'X') { xCounter++; } else if(p11 == 'O') { oCounter++; }
+    if(p12 == 'X') { xCounter++; } else if(p12 == 'O') { oCounter++; }
+    if(p13 == 'X') { xCounter++; } else if(p13 == 'O') { oCounter++; }
+    if(p14 == 'X') { xCounter++; } else if(p14 == 'O') { oCounter++; }
+    if(p15 == 'X') { xCounter++; } else if(p15 == 'O') { oCounter++; }
+    if(p16 == 'X') { xCounter++; } else if(p16 == 'O') { oCounter++; }
+    if(p17 == 'X') { xCounter++; } else if(p17 == 'O') { oCounter++; }
+    if(p18 == 'X') { xCounter++; } else if(p18 == 'O') { oCounter++; }
+    if(p19 == 'X') { xCounter++; } else if(p19 == 'O') { oCounter++; }
+    if(p20 == 'X') { xCounter++; } else if(p20 == 'O') { oCounter++; }
+    if(p21 == 'X') { xCounter++; } else if(p21 == 'O') { oCounter++; }
+    if(p22 == 'X') { xCounter++; } else if(p22 == 'O') { oCounter++; }
+    if(p23 == 'X') { xCounter++; } else if(p23 == 'O') { oCounter++; }
+    if(p24 == 'X') { xCounter++; } else if(p24 == 'O') { oCounter++; }
+    if(p25 == 'X') { xCounter++; } else if(p25 == 'O') { oCounter++; }
+}
+
+void flip(char destRow, int destCol, char currRow, int currCol) {
+    if(((indexAt(destRow, destCol) >= 1)) && (indexAt(destRow, destCol) <= 25)) {
+        if(((abs(currRow - destRow) == 2) && (abs(currCol - destCol) == 1)) || 
+           ((abs(currRow - destRow) == 1) && (abs(currCol - destCol) == 2))) { //special case for the 2 spaces that don't work within 2x2
+            return;
+        }
+        else if(getValueAt(destRow, destCol) == ' ') { //space is already filled
+            return;
+        }
+        else if((abs(currCol - destCol)) > 2 || (abs(currRow - destRow) > 2)) { //space is farther than 2
+            return;
+        }
+        else {
+            if(getValueAt(destRow - 1, destCol) != getValueAt(destRow, destCol) && //up
+               getValueAt(destRow - 1, destCol) != ' ') {
+                    setValueAt(destRow - 1, destCol, getValueAt(destRow, destCol));
+            }
+            if(getValueAt(destRow - 1, destCol + 1) != getValueAt(destRow, destCol) && //upright
+               getValueAt(destRow - 1, destCol + 1) != ' ') {
+                    setValueAt(destRow - 1, destCol + 1, getValueAt(destRow, destCol));
+            }
+            if(getValueAt(destRow, destCol + 1) != getValueAt(destRow, destCol) && //right
+               getValueAt(destRow, destCol + 1) != ' ') {
+                    setValueAt(destRow, destCol + 1, getValueAt(destRow, destCol));
+            }
+            if(getValueAt(destRow + 1, destCol + 1) != getValueAt(destRow, destCol) && //downright
+               getValueAt(destRow + 1, destCol + 1) != ' ') {
+                    setValueAt(destRow + 1, destCol + 1, getValueAt(destRow, destCol));
+            }
+            if(getValueAt(destRow + 1, destCol) != getValueAt(destRow, destCol) && //down
+               getValueAt(destRow + 1, destCol) != ' ') {
+                    setValueAt(destRow + 1, destCol, getValueAt(destRow, destCol));
+            }
+            if(getValueAt(destRow + 1, destCol - 1) != getValueAt(destRow, destCol) && //downleft
+               getValueAt(destRow + 1, destCol - 1) != ' ') {
+                    setValueAt(destRow + 1, destCol - 1, getValueAt(destRow, destCol));
+            }
+            if(getValueAt(destRow, destCol - 1) != getValueAt(destRow, destCol) && // left
+               getValueAt(destRow, destCol - 1) != ' ') {
+                    setValueAt(destRow, destCol - 1, getValueAt(destRow, destCol));
+            }
+            if(getValueAt(destRow - 1, destCol - 1) != getValueAt(destRow, destCol) && //upleft
+               getValueAt(destRow - 1, destCol - 1) != ' ') {
+                    setValueAt(destRow - 1, destCol - 1, getValueAt(destRow, destCol));
+            }
+        }
+    }
+    else {
+        return; //index is not between 1-25
+    }
+}
+
+int main() {
+    // Set initial values for the global board variables to all be blank
+    p1=p2=p3=p4=p5=p6=p7=p8=p9=p10=p11=p12=p13=p14=p15=p16=p17=p18=p19=p20=p21=p22=p23=p24=p25= ' ';
+    // Set corner starting positions
+    p1=p25= 'X';
+    p5=p21= 'O';
+    
+    // Variables to store user input for current row and column, and destination row and column
+    char currRow;
+    int currCol;
+    char destRow;
+    int destCol;
+    
+    //Set move number variable
+    int moveNumber = 1;
+    
+    //player name 'X' or 'O'
+    char player;
+    
+    //counter variables
+    int xCounter = 2;
+    int oCounter = 2;
+    
+    cout << "Welcome to the 2-player game of Contagion. \n"
+         << endl;
+
+    // Main loop to play game
+    while(((xCounter + oCounter) != 25) && (xCounter != 0) && (oCounter != 0)) { //while less than 25 pieces on the board
+        if(moveNumber % 2 == 1) { //switches between saying who's turn it is
+            player = 'X';
+        }
+        else {
+            player = 'O';
+        }
+    
+        // Display board and handle first character of user input
+        displayBoard();
+        cout << moveNumber << ". Enter 'i' for instructions, 'x' to exit, or move for " << player << ": ";
+        cin >> currRow;
+        
+        currRow = toupper(currRow); //uppercase user input
+        
+        // Check to see if user input was 'i' for instructions or 'x' to exit
+        if( currRow == 'I') {
+            displayInstructions();
+            continue;       // Loop back up to retry move
+        }
+        else if( currRow == 'X') {
+            break;  // Break out of enclosing loop, to exit the game.
+        }
+        else if(currRow == 'P') {
+            moveNumber++;
+            continue; //pass turn to other player
+        }
+        else {
+            cin >> currCol >> destRow >> destCol;
+            destRow = toupper(destRow); //uppercase user input
+            
+            if(moveNumber % 2 == 1) { //checks if piece belongs to player X
+                if(getValueAt(currRow, currCol) != 'X') {
+                    cout << "*** Invalid move.  Current piece must belong to you. Please retry." << endl;
+                    continue;
+                }
+                else {
+                    setValueAt(destRow, destCol, getValueAt(currRow, currCol), currRow, currCol, moveNumber);
+                    removePiece(currCol, destCol, ' ', currRow, destRow); //removes original piece if destination is 2 spaces away
+                    flip(destRow, destCol, currRow, currCol); //flips if adjacent to opponent piece
+                }
+            }
+            else { //checks if piece belongs to player O
+                if(getValueAt(currRow, currCol) != 'O') {
+                    cout << "*** Invalid move.  Current piece must belong to you. Please retry." << endl;
+                    continue;
+                }
+                else {
+                    setValueAt(destRow, destCol, getValueAt(currRow, currCol), currRow, currCol, moveNumber);
+                    removePiece(currCol, destCol, ' ', currRow, destRow); //removes original piece if destination is 2 spaces away
+                    flip(destRow, destCol, currRow, currCol); //flips if adjacent to opponent piece
+                }
+            }
+        } //end main else statement
+    countPieces(xCounter, oCounter); //counts pieces to check if satisfies while() condition
+    } //end while()
+    displayBoard();
+    
+    if(xCounter > oCounter) {
+        cout << "X Wins!" << endl;
+    }
+    else if(oCounter > xCounter) {
+        cout << "O Wins!" << endl;
+    }
+    else {
+        cout << "Tie game." << endl;
+    }
+    
+    cout << "Exiting program..." << endl;
+
+    return 0;
+} // end main()
